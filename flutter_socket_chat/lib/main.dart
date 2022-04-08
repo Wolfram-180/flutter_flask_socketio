@@ -23,6 +23,7 @@ class MyCustomForm extends StatefulWidget {
 }
 
 class _MyCustomFormState extends State<MyCustomForm> {
+  late String id;
   final rcvrId = TextEditingController();
   final messString = TextEditingController();
   late Socket socket;
@@ -43,6 +44,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
     socket.onConnect(
       (_) {
+        setState(() {
+          id = socket.id!;
+        });
         print('connect');
         socket.emitWithAck(
           'msg',
@@ -111,6 +115,12 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 child: Text('Connect'),
               ),
             ),*/
+            Text(
+              id,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Enter client ID',
