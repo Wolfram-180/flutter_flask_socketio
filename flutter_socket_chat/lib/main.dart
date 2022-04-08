@@ -35,7 +35,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
     messString.addListener(_printmessString);
 
     socket = io(
-        'http://10.0.2.2:3000',
+        'http://10.0.2.2:5000',
         OptionBuilder().setTransports(['websocket']) // for Flutter or Dart VM
             // .disableAutoConnect() // disable auto-connection
             .setExtraHeaders({'websocket': 'chat'}) // optional
@@ -59,7 +59,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
       },
     );
 
-    socket.on('get_mess_event', (data) => getEvent(data));
+    socket.on('serv_response_message', (data) => getEvent(data));
 /*    socket.on(
       'get_mess_event',
       (data) {
@@ -147,6 +147,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
   void sendMess() {
     print('ID: ${rcvrId.text}');
     print('Mess: ${messString.text}');
-    socket.emit('msg', 'test');
+    socket.emit('message', messString.text);
+/*    socket.emit('msg', 'test');
+    socket.emit("sendMessage",
+        [messageController.text, widget.roomId, widget.username]);*/
   }
 }

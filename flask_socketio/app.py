@@ -18,12 +18,12 @@ def logmess(str, stateid=0):
 async_mode = None
 app = Flask(__name__)
 app.config['SECRET_KEY'] = environment_params.secret_key
-socket_ = SocketIO(app, async_mode=async_mode, logger=True, engineio_logger=True)
+socketio = SocketIO(app, async_mode=async_mode, logger=True, engineio_logger=True)
 thread = None
 thread_lock = Lock()
 
 
-@socket_.on('my_event', namespace='/test')
+@socketio.on('my_event', namespace='/test')
 def test_message(message):
     logmess('my_event')
     session['receive_count'] = session.get('receive_count', 0) + 1
@@ -31,16 +31,28 @@ def test_message(message):
          {'data': message['data'], 'count': session['receive_count']})
 
 
-@socket_.on('message', namespace='/test')
+@socketio.on('message')
 def handle_message(data):
     logmess('message: ' + data)
     print('handle_message - received message: ' + data)
+    emit('serv_response_message',
+         {'data': data, 'count': 100})
 
 
 @app.route('/')
 def index():
-    return render_template('index0.html', async_mode=socket_.async_mode)             
+    return render_template('index0.html', async_mode=socketio.async_mode)             
+
+
+@socketio.on('connect')
+def connect():
+    print("a client connected")
+
+
+@socketio.on('disconnect')
+def disconnect():
+    print('Client disconnected')
 
 
 if __name__ == '__main__':
-    socket_.run(app, debug=True)
+    socketio.run(app, debug=True)
