@@ -8,11 +8,11 @@ import environment_params
 logging.basicConfig(filename='botlog.log', encoding='utf-8', level=logging.INFO)
 
 
-async def logmess(str, stateid=0):
+def logmess(str, stateid=0):
     if stateid == 1:
-        await logging.warning(str)
+        logging.warning(str)
     else:
-        await logging.info(str)
+        logging.info(str)
 
 
 async_mode = None
@@ -34,7 +34,12 @@ def test_message(message):
 @socket_.on('message', namespace='/test')
 def handle_message(data):
     logmess('message: ' + data)
-    print('handle_message - received message: ' + data)         
+    print('handle_message - received message: ' + data)
+
+
+@app.route('/')
+def index():
+    return render_template('index0.html', async_mode=socket_.async_mode)             
 
 
 if __name__ == '__main__':
