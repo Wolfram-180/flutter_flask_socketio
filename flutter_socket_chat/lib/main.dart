@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 void main() => runApp(const MyApp());
 
@@ -24,6 +25,7 @@ class MyCustomForm extends StatefulWidget {
 class _MyCustomFormState extends State<MyCustomForm> {
   final rcvrId = TextEditingController();
   final messString = TextEditingController();
+  late Socket socket;
 
   @override
   void initState() {
@@ -31,12 +33,54 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
     rcvrId.addListener(_printrcvrId);
     messString.addListener(_printmessString);
+
+    socket = io(
+        'http://10.0.2.2:3000',
+        OptionBuilder().setTransports(['websocket']) // for Flutter or Dart VM
+            // .disableAutoConnect() // disable auto-connection
+            .setExtraHeaders({'websocket': 'chat'}) // optional
+            .build());
+
+    socket.onConnect(
+      (_) {
+        print('connect');
+        socket.emitWithAck(
+          'msg',
+          'init',
+          ack: (data) {
+            print('ack $data');
+            if (data != null) {
+              print('from server $data');
+            } else {
+              print("Null");
+            }
+          },
+        );
+      },
+    );
+
+    socket.on('get_mess_event', (data) => getEvent(data));
+/*    socket.on(
+      'get_mess_event',
+      (data) {
+        final dataList = data as List;
+        final ack = dataList.last as Function;
+        ack(null);
+      },
+    );*/
+
+    socket.connect();
+  }
+
+  void getEvent(data) {
+    print(data);
   }
 
   @override
   void dispose() {
     rcvrId.dispose();
     messString.dispose();
+    socket.dispose();
     super.dispose();
   }
 
@@ -58,7 +102,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            InkWell(
+/*            InkWell(
               onTap: () {
                 connect();
               },
@@ -66,7 +110,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 padding: EdgeInsets.all(12.0),
                 child: Text('Connect'),
               ),
-            ),
+            ),*/
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Enter client ID',
@@ -103,5 +147,6 @@ class _MyCustomFormState extends State<MyCustomForm> {
   void sendMess() {
     print('ID: ${rcvrId.text}');
     print('Mess: ${messString.text}');
+    socket.emit('msg', 'test');
   }
 }
