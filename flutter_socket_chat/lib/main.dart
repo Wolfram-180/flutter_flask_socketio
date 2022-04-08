@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Define a custom Form widget.
 class MyCustomForm extends StatefulWidget {
   const MyCustomForm({Key? key}) : super(key: key);
 
@@ -22,53 +21,81 @@ class MyCustomForm extends StatefulWidget {
   _MyCustomFormState createState() => _MyCustomFormState();
 }
 
-// Define a corresponding State class.
-// This class holds data related to the Form.
 class _MyCustomFormState extends State<MyCustomForm> {
-  // Create a text controller and use it to retrieve the current value
-  // of the TextField.
-  final myController = TextEditingController();
+  final rcvrId = TextEditingController();
+  final messString = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
     // Start listening to changes.
-    myController.addListener(_printLatestValue);
+    rcvrId.addListener(_printrcvrId);
+    messString.addListener(_printmessString);
   }
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the widget tree.
-    // This also removes the _printLatestValue listener.
-    myController.dispose();
+    rcvrId.dispose();
+    messString.dispose();
     super.dispose();
   }
 
-  void _printLatestValue() {
-    print('Second text field: ${myController.text}');
+  void _printrcvrId() {
+    print('ID: ${rcvrId.text}');
+  }
+
+  void _printmessString() {
+    print('Mess: ${messString.text}');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Retrieve Text Input'),
+        title: const Text('Send / Receive WebSocket mess'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              onChanged: (text) {
-                print('First text field: $text');
-              },
+              decoration: const InputDecoration(
+                hintText: 'Enter client ID',
+              ),
+              controller: rcvrId,
             ),
             TextField(
-              controller: myController,
+              decoration: const InputDecoration(
+                hintText: 'Enter message',
+              ),
+              controller: messString,
             ),
+            Divider(),
+            SendButton(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class SendButton extends StatelessWidget {
+  const SendButton({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // The InkWell wraps the custom flat button widget.
+    return InkWell(
+      // When the user taps the button, show a snackbar.
+      onTap: () {
+        //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        //  content: Text('Tap'),
+        //));
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Text('Send'),
       ),
     );
   }
