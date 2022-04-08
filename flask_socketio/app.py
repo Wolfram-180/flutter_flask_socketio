@@ -43,5 +43,25 @@ def disconnect_request():
          callback=can_disconnect)
 
 
+@socket_.on('message')
+def handle_message(data):
+    print('received message: ' + data)         
+
+
+@socket_.on('json')
+def handle_json(json):
+    print('received json: ' + str(json))
+
+
+@socket_.on('my event_no_args')
+def handle_my_custom_event_no_args(json):
+    print('received json: ' + str(json))
+
+
+@socket_.on('my_event_args')
+def handle_my_custom_event_args(arg1, arg2, arg3):
+    print('received args: ' + arg1 + arg2 + arg3)
+
+
 if __name__ == '__main__':
     socket_.run(app, debug=True)
