@@ -1,4 +1,16 @@
 
+@socket_.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    logmess('disconnect_request')
+    @copy_current_request_context
+    def can_disconnect():
+        disconnect()
+
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']},
+         callback=can_disconnect)
+
 @app.route('/')
 def index():
     return render_template('index.html', async_mode=socket_.async_mode)
