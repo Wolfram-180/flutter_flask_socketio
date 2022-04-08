@@ -29,7 +29,6 @@ class _MyCustomFormState extends State<MyCustomForm> {
   void initState() {
     super.initState();
 
-    // Start listening to changes.
     rcvrId.addListener(_printrcvrId);
     messString.addListener(_printmessString);
   }
@@ -59,6 +58,15 @@ class _MyCustomFormState extends State<MyCustomForm> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            InkWell(
+              onTap: () {
+                connect();
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Connect'),
+              ),
+            ),
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Enter client ID',
@@ -72,31 +80,28 @@ class _MyCustomFormState extends State<MyCustomForm> {
               controller: messString,
             ),
             Divider(),
-            SendButton(),
+            InkWell(
+              onTap: () {
+                sendMess();
+                //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                //  content: Text('Tap'),
+                //));
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Send'),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-}
 
-class SendButton extends StatelessWidget {
-  const SendButton({Key? key}) : super(key: key);
+  void connect() {}
 
-  @override
-  Widget build(BuildContext context) {
-    // The InkWell wraps the custom flat button widget.
-    return InkWell(
-      // When the user taps the button, show a snackbar.
-      onTap: () {
-        //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        //  content: Text('Tap'),
-        //));
-      },
-      child: const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Text('Send'),
-      ),
-    );
+  void sendMess() {
+    print('ID: ${rcvrId.text}');
+    print('Mess: ${messString.text}');
   }
 }
