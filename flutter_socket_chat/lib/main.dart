@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_socket_chat/models/message.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:uuid/uuid.dart';
 
 void main() => runApp(const MyApp());
 
@@ -23,10 +25,19 @@ class MyCustomForm extends StatefulWidget {
 }
 
 class _MyCustomFormState extends State<MyCustomForm> {
-  late String id;
+  String id = '';
   final rcvrId = TextEditingController();
   final messString = TextEditingController();
   late Socket socket;
+  var uuid = Uuid();
+
+  Message msg = Message(
+      msgId: 'null',
+      content: "Hello!",
+      senderId: 1,
+      senderName: 'user1',
+      sendTime: DateTime.now(),
+      groupId: 1);
 
   @override
   void initState() {
@@ -48,6 +59,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
           id = socket.id!;
         });
         print('connect');
+        /*
         socket.emitWithAck(
           'msg',
           'init',
@@ -59,7 +71,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
               print("Null");
             }
           },
-        );
+        );*/
       },
     );
 
@@ -106,15 +118,6 @@ class _MyCustomFormState extends State<MyCustomForm> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-/*            InkWell(
-              onTap: () {
-                connect();
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Connect'),
-              ),
-            ),*/
             Text(
               id,
               textAlign: TextAlign.center,
@@ -123,13 +126,19 @@ class _MyCustomFormState extends State<MyCustomForm> {
             ),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'Enter client ID',
+                hintText: 'Room ID',
               ),
               controller: rcvrId,
             ),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'Enter message',
+                hintText: 'Client ID',
+              ),
+              controller: rcvrId,
+            ),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Message',
               ),
               controller: messString,
             ),
@@ -143,7 +152,28 @@ class _MyCustomFormState extends State<MyCustomForm> {
               },
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
-                child: Text('Send'),
+                child: Text('Send to Room'),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                sendMess();
+                //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                //  content: Text('Tap'),
+                //));
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Send to Client'),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                connect();
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Enter room'),
               ),
             ),
           ],
