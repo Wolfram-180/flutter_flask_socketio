@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_socket_chat/common/texts.dart';
 import 'package:flutter_socket_chat/models/message.dart';
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: appName,
       home: ChatForm(),
     );
@@ -37,6 +39,8 @@ class _ChatFormState extends State<ChatForm> {
   String clientIdStr = '';
   var uuid = Uuid();
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  bool joinedRoom = false;
 
   // in fact not used as clientId is permanent and decided in initState
   Future<String> SetClientId() async {
@@ -138,12 +142,55 @@ class _ChatFormState extends State<ChatForm> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text(
-              'Room ID: ' + socketId,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    FlutterClipboard.copy(socketId)
+                        .then((value) => print(socketId));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Room ID copied to clipboard'),
+                    ));
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Text('Copy Room ID to clipboard'),
+                  ),
+                ),
+                Flexible(
+                  child: Text(
+                    'Room ID: ' + socketId,
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13.0,
+                      fontFamily: 'Roboto',
+                      color: Color(0xFF212121),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            Row(children: [
+              InkWell(
+                onTap: () {
+                  FlutterClipboard.paste().then((value) {
+                    setState(() {
+                      rcvrId.text = value;
+                      socketId = value;
+                    });
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Room ID pasted from clipboard'),
+                  ));
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text('Paste Room ID from clipboard to field'),
+                ),
+              ),
+            ]),
             Text(
               'Client ID: ' + (clientIdStr != null ? clientIdStr : ''),
               textAlign: TextAlign.center,
@@ -201,7 +248,7 @@ class _ChatFormState extends State<ChatForm> {
             */
             InkWell(
               onTap: () {
-                //connect();
+                socket.emit('join', [socketId, clientIdStr]);
               },
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
@@ -210,11 +257,20 @@ class _ChatFormState extends State<ChatForm> {
             ),
             InkWell(
               onTap: () {
-                //connect();
+                socket.emit('disconnect');
               },
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
                 child: Text('Leave room'),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                socket.emit('message', [socketId, clientIdStr]);
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Send mess to room'),
               ),
             ),
           ],
