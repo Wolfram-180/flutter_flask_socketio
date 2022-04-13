@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_socket_chat/common/texts.dart';
 import 'package:flutter_socket_chat/models/message.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,25 +13,43 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Retrieve Text Input',
-      home: MyCustomForm(),
+      title: appName,
+      home: ChatForm(),
     );
   }
 }
 
-class MyCustomForm extends StatefulWidget {
-  const MyCustomForm({Key? key}) : super(key: key);
+class ChatForm extends StatefulWidget {
+  const ChatForm({Key? key}) : super(key: key);
 
   @override
-  _MyCustomFormState createState() => _MyCustomFormState();
+  _ChatFormState createState() => _ChatFormState();
 }
 
-class _MyCustomFormState extends State<MyCustomForm> {
-  String id = '';
+class _ChatFormState extends State<ChatForm> {
+  String socketId = '';
+  // String clientId = '';
   final rcvrId = TextEditingController();
   final messString = TextEditingController();
+
   late Socket socket;
+  late Future<String> clientId;
+  String clientIdStr = '';
   var uuid = Uuid();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  // in fact not used as clientId is permanent and decided in initState
+  Future<String> SetClientId() async {
+    final SharedPreferences prefs = await _prefs;
+    final String _clientId = (prefs.getString('clientId') ?? uuid.v4());
+
+    setState(() {
+      clientId = prefs.setString('clientId', _clientId).then((bool success) {
+        return _clientId;
+      });
+    });
+    return _clientId;
+  }
 
   Message msg = Message(
       msgId: 'null',
@@ -43,8 +63,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
   void initState() {
     super.initState();
 
-    rcvrId.addListener(_printrcvrId);
-    messString.addListener(_printmessString);
+    clientId = SetClientId().then((String clientId) => clientIdStr = clientId);
 
     socket = io(
         'http://10.0.2.2:5000',
@@ -53,13 +72,22 @@ class _MyCustomFormState extends State<MyCustomForm> {
             .setExtraHeaders({'websocket': 'chat'}) // optional
             .build());
 
-    socket.onConnect(
-      (_) {
-        setState(() {
-          id = socket.id!;
-        });
-        print('connect');
-        /*
+    socket.on('serv_response_message', (data) => getEvent(data));
+    socket.on('get_mess_event', (data) {
+      final dataList = data as List;
+      final ack = dataList.last as Function;
+      ack(null);
+    });
+
+    //socket.on("connect", (_) => print('Connected'));
+    //socket.on("disconnect", (_) => print('Disconnected'));
+    socket.onConnect((_) {
+      setState(() {
+        socketId = socket.id!;
+      });
+      print('connect');
+    });
+    /*
         socket.emitWithAck(
           'msg',
           'init',
@@ -72,20 +100,12 @@ class _MyCustomFormState extends State<MyCustomForm> {
             }
           },
         );*/
-      },
-    );
-
-    socket.on('serv_response_message', (data) => getEvent(data));
-/*    socket.on(
-      'get_mess_event',
-      (data) {
-        final dataList = data as List;
-        final ack = dataList.last as Function;
-        ack(null);
-      },
-    );*/
+    socket.on("disconnect", (_) => print('Disconnected'));
 
     socket.connect();
+
+    rcvrId.addListener(_printrcvrId);
+    messString.addListener(_printmessString);
   }
 
   void getEvent(data) {
@@ -112,14 +132,20 @@ class _MyCustomFormState extends State<MyCustomForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Send / Receive WebSocket mess'),
+        title: const Text(appName),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Text(
-              id,
+              'Room ID: ' + socketId,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Client ID: ' + (clientIdStr != null ? clientIdStr : ''),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -130,12 +156,14 @@ class _MyCustomFormState extends State<MyCustomForm> {
               ),
               controller: rcvrId,
             ),
+            /*
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Client ID',
               ),
               controller: rcvrId,
             ),
+             */
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Message',
@@ -143,6 +171,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
               controller: messString,
             ),
             Divider(),
+            /*
             InkWell(
               onTap: () {
                 sendMess();
@@ -155,6 +184,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 child: Text('Send to Room'),
               ),
             ),
+             */
+            /*
             InkWell(
               onTap: () {
                 sendMess();
@@ -167,13 +198,23 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 child: Text('Send to Client'),
               ),
             ),
+            */
             InkWell(
               onTap: () {
-                connect();
+                //connect();
               },
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
-                child: Text('Enter room'),
+                child: Text('Join room'),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                //connect();
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Leave room'),
               ),
             ),
           ],
