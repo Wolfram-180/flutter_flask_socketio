@@ -144,19 +144,7 @@ class _ChatFormState extends State<ChatForm> {
           children: [
             Row(
               children: [
-                InkWell(
-                  onTap: () {
-                    FlutterClipboard.copy(socketId)
-                        .then((value) => print(socketId));
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Room ID copied to clipboard'),
-                    ));
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: Text('Copy Room ID to clipboard'),
-                  ),
-                ),
+                RoomIDcopyToClipboard(socketId: socketId),
                 Flexible(
                   child: Text(
                     'Room ID: ' + socketId,
@@ -197,55 +185,9 @@ class _ChatFormState extends State<ChatForm> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Room ID',
-              ),
-              controller: rcvrId,
-            ),
-            /*
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Client ID',
-              ),
-              controller: rcvrId,
-            ),
-             */
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Message',
-              ),
-              controller: messString,
-            ),
+            RoomID_txtField(rcvrId: rcvrId),
+            Message_txtField(messString: messString),
             Divider(),
-            /*
-            InkWell(
-              onTap: () {
-                sendMess();
-                //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                //  content: Text('Tap'),
-                //));
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Send to Room'),
-              ),
-            ),
-             */
-            /*
-            InkWell(
-              onTap: () {
-                sendMess();
-                //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                //  content: Text('Tap'),
-                //));
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Send to Client'),
-              ),
-            ),
-            */
             InkWell(
               onTap: () {
                 socket.emit('join', [socketId, clientIdStr]);
@@ -288,5 +230,68 @@ class _ChatFormState extends State<ChatForm> {
 /*    socket.emit('msg', 'test');
     socket.emit("sendMessage",
         [messageController.text, widget.roomId, widget.username]);*/
+  }
+}
+
+class RoomIDcopyToClipboard extends StatelessWidget {
+  const RoomIDcopyToClipboard({
+    Key? key,
+    required this.socketId,
+  }) : super(key: key);
+
+  final String socketId;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        FlutterClipboard.copy(socketId).then((value) => print(socketId));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Room ID copied to clipboard'),
+        ));
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Text('Copy Room ID to clipboard'),
+      ),
+    );
+  }
+}
+
+class Message_txtField extends StatelessWidget {
+  const Message_txtField({
+    Key? key,
+    required this.messString,
+  }) : super(key: key);
+
+  final TextEditingController messString;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'Message',
+      ),
+      controller: messString,
+    );
+  }
+}
+
+class RoomID_txtField extends StatelessWidget {
+  const RoomID_txtField({
+    Key? key,
+    required this.rcvrId,
+  }) : super(key: key);
+
+  final TextEditingController rcvrId;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'Room ID',
+      ),
+      controller: rcvrId,
+    );
   }
 }
