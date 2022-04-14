@@ -145,19 +145,7 @@ class _ChatFormState extends State<ChatForm> {
             Row(
               children: [
                 RoomIDcopyToClipboard(socketId: socketId),
-                Flexible(
-                  child: Text(
-                    'Room ID: ' + socketId,
-                    textAlign: TextAlign.left,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13.0,
-                      fontFamily: 'Roboto',
-                      color: Color(0xFF212121),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                Flexible(child: RoomIDText(socketId: socketId))
               ],
             ),
             Row(children: [
@@ -179,42 +167,15 @@ class _ChatFormState extends State<ChatForm> {
                 ),
               ),
             ]),
-            Text(
-              'Client ID: ' + (clientIdStr != null ? clientIdStr : ''),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ClientID_Text(clientIdStr: clientIdStr),
             RoomID_txtField(rcvrId: rcvrId),
             Message_txtField(messString: messString),
             Divider(),
-            InkWell(
-              onTap: () {
-                socket.emit('join', [socketId, clientIdStr]);
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Join room'),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                socket.emit('disconnect');
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Leave room'),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                socket.emit('message', [socketId, clientIdStr]);
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Send mess to room'),
-              ),
-            ),
+            JoinRoom_inkwell(
+                socket: socket, socketId: socketId, clientIdStr: clientIdStr),
+            LeaveRoom_inkwell(socket: socket),
+            SendMess_inkwell(
+                socket: socket, socketId: socketId, clientIdStr: clientIdStr),
           ],
         ),
       ),
@@ -230,6 +191,123 @@ class _ChatFormState extends State<ChatForm> {
 /*    socket.emit('msg', 'test');
     socket.emit("sendMessage",
         [messageController.text, widget.roomId, widget.username]);*/
+  }
+}
+
+class SendMess_inkwell extends StatelessWidget {
+  const SendMess_inkwell({
+    Key? key,
+    required this.socket,
+    required this.socketId,
+    required this.clientIdStr,
+  }) : super(key: key);
+
+  final Socket socket;
+  final String socketId;
+  final String clientIdStr;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        socket.emit('message', [socketId, clientIdStr]);
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Text('Send mess to room'),
+      ),
+    );
+  }
+}
+
+class LeaveRoom_inkwell extends StatelessWidget {
+  const LeaveRoom_inkwell({
+    Key? key,
+    required this.socket,
+  }) : super(key: key);
+
+  final Socket socket;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        socket.emit('disconnect');
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Text('Leave room'),
+      ),
+    );
+  }
+}
+
+class JoinRoom_inkwell extends StatelessWidget {
+  const JoinRoom_inkwell({
+    Key? key,
+    required this.socket,
+    required this.socketId,
+    required this.clientIdStr,
+  }) : super(key: key);
+
+  final Socket socket;
+  final String socketId;
+  final String clientIdStr;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        socket.emit('join', [socketId, clientIdStr]);
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Text('Join room'),
+      ),
+    );
+  }
+}
+
+class ClientID_Text extends StatelessWidget {
+  const ClientID_Text({
+    Key? key,
+    required this.clientIdStr,
+  }) : super(key: key);
+
+  final String clientIdStr;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Client ID: ' + (clientIdStr != null ? clientIdStr : ''),
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontWeight: FontWeight.bold),
+    );
+  }
+}
+
+class RoomIDText extends StatelessWidget {
+  const RoomIDText({
+    Key? key,
+    required this.socketId,
+  }) : super(key: key);
+
+  final String socketId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Room ID: ' + socketId,
+      textAlign: TextAlign.left,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 13.0,
+        fontFamily: 'Roboto',
+        color: Color(0xFF212121),
+        fontWeight: FontWeight.bold,
+      ),
+    );
   }
 }
 
