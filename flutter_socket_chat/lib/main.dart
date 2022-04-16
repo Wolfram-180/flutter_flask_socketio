@@ -176,6 +176,7 @@ class _ChatFormState extends State<ChatForm> {
             LeaveRoom_inkwell(socket: socket),
             SendMess_inkwell(
                 socket: socket, socketId: socketId, clientIdStr: clientIdStr),
+            _ElevatedButtonDemo(),
           ],
         ),
       ),
@@ -191,6 +192,29 @@ class _ChatFormState extends State<ChatForm> {
 /*    socket.emit('msg', 'test');
     socket.emit("sendMessage",
         [messageController.text, widget.roomId, widget.username]);*/
+  }
+}
+
+class _ElevatedButtonDemo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ElevatedButton(
+            onPressed: () {},
+            child: Text('test'),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 18),
+            label: Text('test'),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
   }
 }
 
