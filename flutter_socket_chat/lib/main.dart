@@ -104,9 +104,15 @@ class _ChatFormState extends State<ChatForm> {
             }
           },
         );*/
-    socket.on("disconnect", (_) => print('Disconnected'));
+    socket.on("disconnect", (_) {
+      setState(() {
+        socketId = '';
+      });
+      print('disconnected');
+    });
 
-    socket.connect();
+    //socket.connect();
+    connect();
 
     rcvrId.addListener(_printrcvrId);
     messString.addListener(_printmessString);
@@ -144,8 +150,12 @@ class _ChatFormState extends State<ChatForm> {
           children: [
             Row(
               children: [
-                RoomIDcopyToClipboard(socketId: socketId),
-                Flexible(child: RoomIDText(socketId: socketId))
+                Flexible(child: _RoomIDText(socketId: socketId)),
+              ],
+            ),
+            Row(
+              children: [
+                _RoomIDcopyToClipboard(socketId: socketId),
               ],
             ),
             Row(children: [
@@ -183,7 +193,9 @@ class _ChatFormState extends State<ChatForm> {
     );
   }
 
-  void connect() {}
+  void connect() {
+    socket.connect();
+  }
 
   void sendMess() {
     print('ID: ${rcvrId.text}');
@@ -195,6 +207,25 @@ class _ChatFormState extends State<ChatForm> {
   }
 }
 
+class _Join_room extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.message, size: 18),
+            label: Text('test'),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ElevatedButtonDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -202,13 +233,9 @@ class _ElevatedButtonDemo extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('test'),
-          ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 18),
+            icon: const Icon(Icons.message, size: 18),
             label: Text('test'),
             onPressed: () {},
           ),
@@ -282,6 +309,9 @@ class JoinRoom_inkwell extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        if (socket.connected == false) {
+          socket.connect();
+        }
         socket.emit('join', [socketId, clientIdStr]);
       },
       child: const Padding(
@@ -311,8 +341,8 @@ class ClientID_Text extends StatelessWidget {
   }
 }
 
-class RoomIDText extends StatelessWidget {
-  const RoomIDText({
+class _RoomIDText extends StatelessWidget {
+  const _RoomIDText({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -326,7 +356,7 @@ class RoomIDText extends StatelessWidget {
       textAlign: TextAlign.left,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
-        fontSize: 13.0,
+        fontSize: 16.0,
         fontFamily: 'Roboto',
         color: Color(0xFF212121),
         fontWeight: FontWeight.bold,
@@ -335,8 +365,8 @@ class RoomIDText extends StatelessWidget {
   }
 }
 
-class RoomIDcopyToClipboard extends StatelessWidget {
-  const RoomIDcopyToClipboard({
+class _RoomIDcopyToClipboard extends StatelessWidget {
+  const _RoomIDcopyToClipboard({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -345,16 +375,24 @@ class RoomIDcopyToClipboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        FlutterClipboard.copy(socketId).then((value) => print(socketId));
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Room ID copied to clipboard'),
-        ));
-      },
-      child: const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Text('Copy Room ID to clipboard'),
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.add_chart, size: 18),
+            label: Text('Copy Room ID to clipboard'),
+            onPressed: () {
+              print('Room ID ' + socketId + ' copied to clipboard');
+              FlutterClipboard.copy(socketId).then((value) =>
+                  print('Room ID ' + socketId + ' copied to clipboard'));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Room ID copied to clipboard'),
+              ));
+            },
+          ),
+        ],
       ),
     );
   }
