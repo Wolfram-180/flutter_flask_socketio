@@ -39,22 +39,25 @@ def disconnect():
 
 
 @socketio.on('message')
-def handle_message(data):
-    print('received message: ' + data)
-    send('received message: ')
-    send(message)
-    send('data: ')
-    send(data)
+def handle_message(message, data):
+    print('received message: ' + message)
+    print('received data: ' + data)
+    send('received message: ' + message)
+    send('received data: ' + data)
+    send('received message in namespace="/chat": ' + message, namespace='/chat')
+    send('received data in namespace="/chat": ' + data, namespace='/chat')    
 
 
 @socketio.on('json')
 def handle_json(json):
     print('received json: ' + str(json))    
+    send(json, json=True)
 
 
 @socketio.on('event1')
 def handle_event1(json):
     print('event1 received json : ' + str(json))
+    emit('event1 response', json)
 
 
 @socketio.on('event2')
@@ -86,6 +89,10 @@ def handle_my_custom_event(json):
     print('event5 received json: ' + str(json))
     return 'one', 2
 
+
+# server-side emit
+def some_function():
+    socketio.emit('some event', {'data': 42})
 
 
 @socketio.on('join')
