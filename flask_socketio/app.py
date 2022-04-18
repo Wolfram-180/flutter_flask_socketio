@@ -1,6 +1,5 @@
 from flask import Flask, render_template, session, copy_current_request_context
-from flask_socketio import SocketIO, emit, disconnect
-from flask_socketio import join_room
+from flask_socketio import SocketIO, emit, send, join_room, disconnect
 from threading import Lock
 import logging
 
@@ -42,6 +41,10 @@ def disconnect():
 @socketio.on('message')
 def handle_message(data):
     print('received message: ' + data)
+    send('received message: ')
+    send(message)
+    send('data: ')
+    send(data)
 
 
 @socketio.on('json')
@@ -51,17 +54,20 @@ def handle_json(json):
 
 @socketio.on('event1')
 def handle_event1(json):
-    print('received json event1: ' + str(json))
+    print('event1 received json : ' + str(json))
 
 
 @socketio.on('event2')
 def handle_event2(arg1, arg2, arg3):
-    print('received args event2: ' + arg1 + arg2 + arg3)
+    print('event2 received args : ' + arg1 + arg2 + arg3)
 
-
-@socketio.event
-def event3(arg1, arg2, arg3):
-    print('received args event3: ' + arg1 + arg2 + arg3)
+# returns error: 'SocketIO' object has no attribute 'event'
+# https://flask-socketio.readthedocs.io/en/latest/getting_started.html#receiving-messages
+# @socketio.event
+# look later
+#@socketio.event
+#def my_custom_event(arg1, arg2, arg3):
+#    print('received args jaja2: ' + arg1 + arg2 + arg3)
 
 
 @socketio.on('test_nmspc_event', namespace='/test')
@@ -73,6 +79,12 @@ def event4_handler(data):
     print('event4_handler received data: ' + str(data))
 
 socketio.on_event('event4', event4_handler, namespace='/test')
+
+
+@socketio.on('event5')
+def handle_my_custom_event(json):
+    print('event5 received json: ' + str(json))
+    return 'one', 2
 
 
 
