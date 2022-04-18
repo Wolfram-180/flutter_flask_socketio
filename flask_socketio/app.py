@@ -1,12 +1,11 @@
 from flask import Flask, render_template, session, copy_current_request_context
-from flask_socketio import SocketIO, emit, send, join_room, disconnect
+from flask_socketio import SocketIO, emit, send, join_room, leave_room, disconnect, ConnectionRefusedError
 from threading import Lock
 import logging
 
 import environment_params
 
 logging.basicConfig(filename='botlog.log', encoding='utf-8', level=logging.INFO)
-
 
 def logmess(str, stateid=0):
     if stateid == 1:
@@ -28,14 +27,24 @@ def index():
     return render_template('index.html', async_mode=socketio.async_mode)        
 
 
+def authenticate(auth):
+    # return False
+    return True
+
+# auth to be passed in dictionary format
+#  connection and disconnection events are sent individually on each namespace used
 @socketio.on('connect')
-def connect():
+def on_connect(auth):
     print('client connected')
+    print('auth: ', auth)
+    emit('my response', {'data': 'Connected'})
+    # if not authenticate(auth):
+    #    raise ConnectionRefusedError('unauthorized!')
 
 
 @socketio.on('disconnect')
-def disconnect():
-    print('client disconnected')
+def on_disconnect():
+    print('client disconnected')    
 
 
 @socketio.on('message')
@@ -90,16 +99,35 @@ def handle_my_custom_event(json):
     return 'one', 2
 
 
-# server-side emit
+# server-side emit, broadcast=True is assumed
 def some_function():
     socketio.emit('some event', {'data': 42})
 
 
 @socketio.on('join')
-def join_group_room(room_id, client_id):
-    join_room(room_id)
-    print('client ', client_id, ' joined to ', room_id)
-    emit('joined', client_id)
+def on_join(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    send(username + ' has entered the room.', to=room)
+
+
+@socketio.on('leave')
+def on_leave(data):
+    username = data['username']
+    room = data['room']
+    leave_room(room)
+    send(username + ' has left the room.', to=room)
+
+
+def send_to_room(data, room):
+    socketio.emit('send_to_room', data, to=room)
+
+
+@socketio.on_error_default  # handles all namespaces without an explicit error handler
+def default_error_handler(e):
+    print('Error: ', str(e))
+    pass
 
 
 if __name__ == '__main__':
