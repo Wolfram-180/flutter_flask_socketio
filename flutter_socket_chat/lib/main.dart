@@ -36,8 +36,8 @@ class _ChatFormState extends State<ChatForm> {
   var uuid = Uuid();
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  final rcvrId = TextEditingController();
-  final messString = TextEditingController();
+  final roomId_control = TextEditingController();
+  final messString_control = TextEditingController();
 
   bool joinedRoom = false;
 
@@ -91,8 +91,8 @@ class _ChatFormState extends State<ChatForm> {
 
     socket.connect();
 
-    rcvrId.addListener(_printrcvrId);
-    messString.addListener(_printmessString);
+    roomId_control.addListener(_printrcvrId);
+    messString_control.addListener(_printmessString);
   }
 
   void _printrcvrId() {
@@ -109,8 +109,8 @@ class _ChatFormState extends State<ChatForm> {
 
   @override
   void dispose() {
-    rcvrId.dispose();
-    messString.dispose();
+    roomId_control.dispose();
+    messString_control.dispose();
     socket.dispose();
     super.dispose();
   }
@@ -137,15 +137,15 @@ class _ChatFormState extends State<ChatForm> {
             ),
             Row(
               children: [
-                _RoomIDcopyToClipboard(socketId: socketId),
+                RoomIDcopyToClipboard_Btn(socketId: socketId),
                 const SizedBox(width: 5),
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.add_chart, size: 18),
+                  icon: const Icon(Icons.arrow_circle_down, size: 18),
                   label: Text('Paste Room ID'),
                   onPressed: () {
                     FlutterClipboard.paste().then((value) {
                       setState(() {
-                        rcvrId.text = value;
+                        roomId_control.text = value;
                         socketId = value;
                       });
                     });
@@ -156,8 +156,8 @@ class _ChatFormState extends State<ChatForm> {
                 ),
               ],
             ),
-            RoomID_txtField(rcvrId: rcvrId),
-            Message_txtField(messString: messString),
+            RoomID_txtField(roomId: roomId_control),
+            Message_txtField(messString: messString_control),
             Divider(),
             JoinRoom_inkwell(
                 socket: socket, socketId: socketId, clientIdStr: clientIdStr),
@@ -176,9 +176,9 @@ class _ChatFormState extends State<ChatForm> {
   }
 
   void sendMess() {
-    print('ID: ${rcvrId.text}');
-    print('Mess: ${messString.text}');
-    socket.emit('message', messString.text);
+    print('ID: ${roomId_control.text}');
+    print('Mess: ${messString_control.text}');
+    socket.emit('message', messString_control.text);
 /*    socket.emit('msg', 'test');
     socket.emit("sendMessage",
         [messageController.text, widget.roomId, widget.username]);*/
@@ -350,9 +350,9 @@ class RoomID_Text extends StatelessWidget {
   }
 }
 
-class _RoomIDcopyToClipboard extends StatelessWidget {
+class RoomIDcopyToClipboard_Btn extends StatelessWidget {
   // used
-  const _RoomIDcopyToClipboard({
+  const RoomIDcopyToClipboard_Btn({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -384,6 +384,7 @@ class _RoomIDcopyToClipboard extends StatelessWidget {
 }
 
 class Message_txtField extends StatelessWidget {
+  // used
   const Message_txtField({
     Key? key,
     required this.messString,
@@ -403,12 +404,13 @@ class Message_txtField extends StatelessWidget {
 }
 
 class RoomID_txtField extends StatelessWidget {
+  // used
   const RoomID_txtField({
     Key? key,
-    required this.rcvrId,
+    required this.roomId,
   }) : super(key: key);
 
-  final TextEditingController rcvrId;
+  final TextEditingController roomId;
 
   @override
   Widget build(BuildContext context) {
@@ -416,7 +418,7 @@ class RoomID_txtField extends StatelessWidget {
       decoration: const InputDecoration(
         hintText: 'Room ID',
       ),
-      controller: rcvrId,
+      controller: roomId,
     );
   }
 }
