@@ -1,11 +1,11 @@
-from flask import Flask, render_template, session, copy_current_request_context
+from flask import Flask, render_template, session, copy_current_request_context, request
 from flask_socketio import SocketIO, emit, send, join_room, leave_room, disconnect, ConnectionRefusedError
 from threading import Lock
 import logging
 
 import environment_params
 
-logging.basicConfig(filename='botlog.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename='servlog.log', encoding='utf-8', level=logging.INFO)
 
 def logmess(str, stateid=0):
     if stateid == 1:
@@ -38,7 +38,7 @@ def on_connect(auth):
     print('client connected')
     print('auth: ', auth)
     emit('my response', {'data': 'Connected'})
-    # if not authenticate(auth):
+    #if not authenticate(request.args):
     #    raise ConnectionRefusedError('unauthorized!')
 
 
@@ -126,7 +126,9 @@ def send_to_room(data, room):
 
 @socketio.on_error_default  # handles all namespaces without an explicit error handler
 def default_error_handler(e):
-    print('Error: ', str(e))
+    print('error e: ', str(e))
+    print('request.event["message"] : ', request.event["message"]) 
+    print('request.event["args"] : ', request.event["args"])    
     pass
 
 
