@@ -130,12 +130,14 @@ class _ChatFormState extends State<ChatForm> {
                 Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
               ],
             ),
+            const SizedBox(height: 5),
             Row(
               children: [
                 Flexible(child: RoomID_Text(socketId: socketId)),
               ],
             ),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 RoomIDcopyToClipboard_Btn(socketId: socketId),
                 const SizedBox(width: 5),
@@ -159,12 +161,14 @@ class _ChatFormState extends State<ChatForm> {
             RoomID_txtField(roomId: roomId_control),
             Message_txtField(messString: messString_control),
             Divider(),
-            JoinRoom_inkwell(
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              JoinRoom_Btn(
+                  socket: socket, socketId: socketId, clientIdStr: clientIdStr),
+              const SizedBox(width: 5),
+              LeaveRoom_Btn(socket: socket),
+            ]),
+            SendMessToRoom_Btn(
                 socket: socket, socketId: socketId, clientIdStr: clientIdStr),
-            LeaveRoom_inkwell(socket: socket),
-            SendMess_inkwell(
-                socket: socket, socketId: socketId, clientIdStr: clientIdStr),
-            _ElevatedButtonDemo(),
           ],
         ),
       ),
@@ -174,57 +178,11 @@ class _ChatFormState extends State<ChatForm> {
   void connect() {
     socket.connect();
   }
-
-  void sendMess() {
-    print('ID: ${roomId_control.text}');
-    print('Mess: ${messString_control.text}');
-    socket.emit('message', messString_control.text);
-/*    socket.emit('msg', 'test');
-    socket.emit("sendMessage",
-        [messageController.text, widget.roomId, widget.username]);*/
-  }
 }
 
-class _Join_room extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.message, size: 18),
-            label: Text('test'),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ElevatedButtonDemo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.message, size: 18),
-            label: Text('test'),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SendMess_inkwell extends StatelessWidget {
-  const SendMess_inkwell({
+class SendMessToRoom_Btn extends StatelessWidget {
+  // used
+  const SendMessToRoom_Btn({
     Key? key,
     required this.socket,
     required this.socketId,
@@ -237,20 +195,19 @@ class SendMess_inkwell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Send mess to room'),
+      onPressed: () {
         socket.emit('message', [socketId, clientIdStr]);
       },
-      child: const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Text('Send mess to room'),
-      ),
     );
   }
 }
 
-class LeaveRoom_inkwell extends StatelessWidget {
-  const LeaveRoom_inkwell({
+class LeaveRoom_Btn extends StatelessWidget {
+  // used
+  const LeaveRoom_Btn({
     Key? key,
     required this.socket,
   }) : super(key: key);
@@ -259,20 +216,19 @@ class LeaveRoom_inkwell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Leave room'),
+      onPressed: () {
         socket.emit('disconnect');
       },
-      child: const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Text('Leave room'),
-      ),
     );
   }
 }
 
-class JoinRoom_inkwell extends StatelessWidget {
-  const JoinRoom_inkwell({
+class JoinRoom_Btn extends StatelessWidget {
+  //used
+  const JoinRoom_Btn({
     Key? key,
     required this.socket,
     required this.socketId,
@@ -285,17 +241,15 @@ class JoinRoom_inkwell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Join room'),
+      onPressed: () {
         if (socket.connected == false) {
           socket.connect();
         }
         socket.emit('join', [socketId, clientIdStr]);
       },
-      child: const Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Text('Join room'),
-      ),
     );
   }
 }
