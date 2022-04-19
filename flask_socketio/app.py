@@ -31,6 +31,7 @@ def authenticate(auth):
     # return False
     return True
 
+
 # auth to be passed in dictionary format
 #  connection and disconnection events are sent individually on each namespace used
 @socketio.on('connect')

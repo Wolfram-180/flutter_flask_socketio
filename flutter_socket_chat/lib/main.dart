@@ -30,19 +30,17 @@ class ChatForm extends StatefulWidget {
 
 class _ChatFormState extends State<ChatForm> {
   String socketId = '';
-  // String clientId = '';
-  final rcvrId = TextEditingController();
-  final messString = TextEditingController();
-
   late Socket socket;
   late Future<String> clientId;
   String clientIdStr = '';
   var uuid = Uuid();
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
+  final rcvrId = TextEditingController();
+  final messString = TextEditingController();
+
   bool joinedRoom = false;
 
-  // in fact not used as clientId is permanent and decided in initState
   Future<String> SetClientId() async {
     final SharedPreferences prefs = await _prefs;
     final String _clientId = (prefs.getString('clientId') ?? uuid.v4());
@@ -71,39 +69,19 @@ class _ChatFormState extends State<ChatForm> {
 
     socket = io(
         'http://10.0.2.2:5000',
-        OptionBuilder().setTransports(['websocket']) // for Flutter or Dart VM
-            // .disableAutoConnect() // disable auto-connection
+        OptionBuilder()
+            .setTransports(['websocket']) // for Flutter or Dart VM
+            .disableAutoConnect() // disable auto-connection
             .setExtraHeaders({'websocket': 'chat'}) // optional
             .build());
 
-    socket.on('serv_response_message', (data) => getEvent(data));
-    socket.on('get_mess_event', (data) {
-      final dataList = data as List;
-      final ack = dataList.last as Function;
-      ack(null);
-    });
-
-    //socket.on("connect", (_) => print('Connected'));
-    //socket.on("disconnect", (_) => print('Disconnected'));
     socket.onConnect((_) {
       setState(() {
         socketId = socket.id!;
       });
       print('connect');
     });
-    /*
-        socket.emitWithAck(
-          'msg',
-          'init',
-          ack: (data) {
-            print('ack $data');
-            if (data != null) {
-              print('from server $data');
-            } else {
-              print("Null");
-            }
-          },
-        );*/
+
     socket.on("disconnect", (_) {
       setState(() {
         socketId = '';
@@ -111,15 +89,22 @@ class _ChatFormState extends State<ChatForm> {
       print('disconnected');
     });
 
-    //socket.connect();
-    connect();
+    socket.connect();
 
     rcvrId.addListener(_printrcvrId);
     messString.addListener(_printmessString);
   }
 
+  void _printrcvrId() {
+    //print('ID: ${rcvrId.text}');
+  }
+
+  void _printmessString() {
+    //print('Mess: ${messString.text}');
+  }
+
   void getEvent(data) {
-    print(data);
+    //print(data);
   }
 
   @override
@@ -128,14 +113,6 @@ class _ChatFormState extends State<ChatForm> {
     messString.dispose();
     socket.dispose();
     super.dispose();
-  }
-
-  void _printrcvrId() {
-    print('ID: ${rcvrId.text}');
-  }
-
-  void _printmessString() {
-    print('Mess: ${messString.text}');
   }
 
   @override
@@ -150,34 +127,35 @@ class _ChatFormState extends State<ChatForm> {
           children: [
             Row(
               children: [
-                Flexible(child: _RoomIDText(socketId: socketId)),
+                Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
+              ],
+            ),
+            Row(
+              children: [
+                Flexible(child: RoomID_Text(socketId: socketId)),
               ],
             ),
             Row(
               children: [
                 _RoomIDcopyToClipboard(socketId: socketId),
+                const SizedBox(width: 5),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add_chart, size: 18),
+                  label: Text('Paste Room ID'),
+                  onPressed: () {
+                    FlutterClipboard.paste().then((value) {
+                      setState(() {
+                        rcvrId.text = value;
+                        socketId = value;
+                      });
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Room ID pasted from clipboard'),
+                    ));
+                  },
+                ),
               ],
             ),
-            Row(children: [
-              InkWell(
-                onTap: () {
-                  FlutterClipboard.paste().then((value) {
-                    setState(() {
-                      rcvrId.text = value;
-                      socketId = value;
-                    });
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Room ID pasted from clipboard'),
-                  ));
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Text('Paste Room ID from clipboard to field'),
-                ),
-              ),
-            ]),
-            ClientID_Text(clientIdStr: clientIdStr),
             RoomID_txtField(rcvrId: rcvrId),
             Message_txtField(messString: messString),
             Divider(),
@@ -323,6 +301,7 @@ class JoinRoom_inkwell extends StatelessWidget {
 }
 
 class ClientID_Text extends StatelessWidget {
+  // used
   const ClientID_Text({
     Key? key,
     required this.clientIdStr,
@@ -334,15 +313,21 @@ class ClientID_Text extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       'Client ID: ' + (clientIdStr != null ? clientIdStr : ''),
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.left,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(fontWeight: FontWeight.bold),
+      style: const TextStyle(
+        fontSize: 16.0,
+        fontFamily: 'Roboto',
+        color: Color(0xFF212121),
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }
 
-class _RoomIDText extends StatelessWidget {
-  const _RoomIDText({
+class RoomID_Text extends StatelessWidget {
+  // used
+  const RoomID_Text({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -366,6 +351,7 @@ class _RoomIDText extends StatelessWidget {
 }
 
 class _RoomIDcopyToClipboard extends StatelessWidget {
+  // used
   const _RoomIDcopyToClipboard({
     Key? key,
     required this.socketId,
@@ -379,10 +365,9 @@ class _RoomIDcopyToClipboard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 12),
           ElevatedButton.icon(
             icon: const Icon(Icons.add_chart, size: 18),
-            label: Text('Copy Room ID to clipboard'),
+            label: Text('Copy Room ID to clip'),
             onPressed: () {
               print('Room ID ' + socketId + ' copied to clipboard');
               FlutterClipboard.copy(socketId).then((value) =>
