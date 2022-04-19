@@ -130,12 +130,13 @@ class _ChatFormState extends State<ChatForm> {
                 Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
               ],
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 15),
             Row(
               children: [
                 Flexible(child: RoomID_Text(socketId: socketId)),
               ],
             ),
+            const SizedBox(height: 15),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -162,7 +163,7 @@ class _ChatFormState extends State<ChatForm> {
             Message_txtField(messString: messString_control),
             Divider(),
             Row(mainAxisSize: MainAxisSize.min, children: [
-              JoinRoom_Btn(
+              Connect_Btn(
                   socket: socket, socketId: socketId, clientIdStr: clientIdStr),
               const SizedBox(width: 5),
               LeaveRoom_Btn(socket: socket),
@@ -221,6 +222,34 @@ class LeaveRoom_Btn extends StatelessWidget {
       label: Text('Leave room'),
       onPressed: () {
         socket.emit('disconnect');
+      },
+    );
+  }
+}
+
+class Connect_Btn extends StatelessWidget {
+  //used
+  const Connect_Btn({
+    Key? key,
+    required this.socket,
+    required this.socketId,
+    required this.clientIdStr,
+  }) : super(key: key);
+
+  final Socket socket;
+  final String socketId;
+  final String clientIdStr;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Join room'),
+      onPressed: () {
+        if (socket.connected == false) {
+          socket.connect();
+        }
+        socket.emit('join', [socketId, clientIdStr]);
       },
     );
   }
