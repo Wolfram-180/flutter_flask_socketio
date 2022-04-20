@@ -170,6 +170,13 @@ class _ChatFormState extends State<ChatForm> {
             ]),
             SendMessToRoom_Btn(
                 socket: socket, socketId: socketId, clientIdStr: clientIdStr),
+            const Divider(
+              color: Colors.grey,
+              height: 20,
+              thickness: 1,
+              indent: 0,
+              endIndent: 0,
+            ),
           ],
         ),
       ),
