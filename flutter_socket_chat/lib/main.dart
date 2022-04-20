@@ -121,63 +121,67 @@ class _ChatFormState extends State<ChatForm> {
       appBar: AppBar(
         title: const Text(appName),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Row(
-              children: [
-                Flexible(child: RoomID_Text(socketId: socketId)),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RoomIDcopyToClipboard_Btn(socketId: socketId),
-                const SizedBox(width: 5),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.arrow_circle_down, size: 18),
-                  label: Text('Paste Room ID'),
-                  onPressed: () {
-                    FlutterClipboard.paste().then((value) {
-                      setState(() {
-                        roomId_control.text = value;
-                        socketId = value;
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Flexible(child: RoomID_Text(socketId: socketId)),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RoomIDcopyToClipboard_Btn(socketId: socketId),
+                  const SizedBox(width: 5),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.arrow_circle_down, size: 18),
+                    label: Text('Paste Room ID'),
+                    onPressed: () {
+                      FlutterClipboard.paste().then((value) {
+                        setState(() {
+                          roomId_control.text = value;
+                          socketId = value;
+                        });
                       });
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Room ID pasted from clipboard'),
-                    ));
-                  },
-                ),
-              ],
-            ),
-            RoomID_txtField(roomId: roomId_control),
-            Message_txtField(messString: messString_control),
-            Divider(),
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              Connect_Btn(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Room ID pasted from clipboard'),
+                      ));
+                    },
+                  ),
+                ],
+              ),
+              RoomID_txtField(roomId: roomId_control),
+              Message_txtField(messString: messString_control),
+              Divider(),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Connect_Btn(
+                    socket: socket,
+                    socketId: socketId,
+                    clientIdStr: clientIdStr),
+                const SizedBox(width: 5),
+                LeaveRoom_Btn(socket: socket),
+              ]),
+              SendMessToRoom_Btn(
                   socket: socket, socketId: socketId, clientIdStr: clientIdStr),
-              const SizedBox(width: 5),
-              LeaveRoom_Btn(socket: socket),
-            ]),
-            SendMessToRoom_Btn(
-                socket: socket, socketId: socketId, clientIdStr: clientIdStr),
-            const Divider(
-              color: Colors.grey,
-              height: 20,
-              thickness: 1,
-              indent: 0,
-              endIndent: 0,
-            ),
-          ],
+              const Divider(
+                color: Colors.grey,
+                height: 20,
+                thickness: 1,
+                indent: 0,
+                endIndent: 0,
+              ),
+            ],
+          ),
         ),
       ),
     );
