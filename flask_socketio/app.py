@@ -35,10 +35,17 @@ def authenticate(auth):
 # auth to be passed in dictionary format
 #  connection and disconnection events are sent individually on each namespace used
 @socketio.on('connect')
-def on_connect(auth):
+def on_connect():
     print('client connected')
-    print('auth: ', auth)
-    emit('my response', {'data': 'Connected'})
+    emit('connected', {'data': 'connected'})
+
+
+@socketio.on('connect_data')
+def handle_connect_data(data):
+    #print(data['socketId'])
+    #print(data['clientId'])
+    print(data['user'])
+    print(data['token'])
     #if not authenticate(request.args):
     #    raise ConnectionRefusedError('unauthorized!')
 

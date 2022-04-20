@@ -6,6 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:uuid/uuid.dart';
 
+import 'common/hasher.dart' as hasher;
+import 'ignore_data/temp_data.dart' as temp_data;
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -72,14 +75,14 @@ class _ChatFormState extends State<ChatForm> {
         OptionBuilder()
             .setTransports(['websocket']) // for Flutter or Dart VM
             .disableAutoConnect() // disable auto-connection
-            .setExtraHeaders({'websocket': 'chat'}) // optional
+            .setExtraHeaders({'auth': 'token_val'}) // optional
             .build());
 
     socket.onConnect((_) {
       setState(() {
         socketId = socket.id!;
       });
-      print('connect');
+      print('onConnect : socketId = ${socketId}');
     });
 
     socket.on("disconnect", (_) {
@@ -87,6 +90,19 @@ class _ChatFormState extends State<ChatForm> {
         socketId = '';
       });
       print('disconnected');
+    });
+
+    socket.on("connected", (data) {
+      //setState(() {});
+      String _hash = hasher.textToMd5(temp_data.usr_password);
+      print(data['data']);
+      Map<String, dynamic> connect_data = ({
+        //'socketId': socketId,
+        //'clientId': clientIdStr,
+        'user': temp_data.usr_login,
+        'token': _hash,
+      });
+      socket.emit('connect_data', connect_data);
     });
 
     socket.connect();
@@ -109,9 +125,9 @@ class _ChatFormState extends State<ChatForm> {
 
   @override
   void dispose() {
+    socket.dispose();
     roomId_control.dispose();
     messString_control.dispose();
-    socket.dispose();
     super.dispose();
   }
 
@@ -125,7 +141,6 @@ class _ChatFormState extends State<ChatForm> {
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
-
             children: [
               Row(
                 children: [
@@ -180,6 +195,13 @@ class _ChatFormState extends State<ChatForm> {
                 thickness: 1,
                 indent: 0,
                 endIndent: 0,
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_chart, size: 18),
+                label: Text('Send mess to room'),
+                onPressed: () {
+                  socket.emit('message', [socketId, clientIdStr]);
+                },
               ),
             ],
           ),
