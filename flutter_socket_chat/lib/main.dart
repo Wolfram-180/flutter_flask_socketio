@@ -125,6 +125,7 @@ class _ChatFormState extends State<ChatForm> {
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Column(
+
             children: [
               Row(
                 children: [
