@@ -96,13 +96,13 @@ class _ChatFormState extends State<ChatForm> {
       //setState(() {});
       String _hash = hasher.textToMd5(temp_data.usr_password);
       print(data['data']);
-      Map<String, dynamic> connect_data = ({
+      Map<String, dynamic> connectData = ({
         //'socketId': socketId,
         //'clientId': clientIdStr,
         'user': temp_data.usr_login,
         'token': _hash,
       });
-      socket.emit('connect_data', connect_data);
+      socket.emit('connect_data', connectData);
     });
 
     socket.connect();
@@ -150,18 +150,18 @@ class _ChatFormState extends State<ChatForm> {
               const SizedBox(height: 15),
               Row(
                 children: [
-                  Flexible(child: RoomID_Text(socketId: socketId)),
+                  Flexible(child: SID_Text(socketId: socketId)),
                 ],
               ),
               const SizedBox(height: 15),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  RoomIDcopyToClipboard_Btn(socketId: socketId),
+                  SIDcopyToClipboard_Btn(socketId: socketId),
                   const SizedBox(width: 5),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.arrow_circle_down, size: 18),
-                    label: Text('Paste Room ID'),
+                    label: Text('Paste SID'),
                     onPressed: () {
                       FlutterClipboard.paste().then((value) {
                         setState(() {
@@ -170,13 +170,13 @@ class _ChatFormState extends State<ChatForm> {
                         });
                       });
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Room ID pasted from clipboard'),
+                        content: Text('SID pasted from clipboard'),
                       ));
                     },
                   ),
                 ],
               ),
-              RoomID_txtField(roomId: roomId_control),
+              SID_txtField(roomId: roomId_control),
               Message_txtField(messString: messString_control),
               Divider(),
               Row(mainAxisSize: MainAxisSize.min, children: [
@@ -185,7 +185,7 @@ class _ChatFormState extends State<ChatForm> {
                     socketId: socketId,
                     clientIdStr: clientIdStr),
                 const SizedBox(width: 5),
-                LeaveRoom_Btn(socket: socket),
+                Disconnect_Btn(socket: socket),
               ]),
               SendMessToRoom_Btn(
                   socket: socket, socketId: socketId, clientIdStr: clientIdStr),
@@ -240,27 +240,6 @@ class SendMessToRoom_Btn extends StatelessWidget {
   }
 }
 
-class LeaveRoom_Btn extends StatelessWidget {
-  // used
-  const LeaveRoom_Btn({
-    Key? key,
-    required this.socket,
-  }) : super(key: key);
-
-  final Socket socket;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      icon: const Icon(Icons.add_chart, size: 18),
-      label: Text('Leave room'),
-      onPressed: () {
-        socket.emit('disconnect');
-      },
-    );
-  }
-}
-
 class JoinRoom_Btn extends StatelessWidget {
   //used
   const JoinRoom_Btn({
@@ -280,7 +259,11 @@ class JoinRoom_Btn extends StatelessWidget {
       icon: const Icon(Icons.add_chart, size: 18),
       label: Text('Join room'),
       onPressed: () {
-        socket.emit('join', [socketId, clientIdStr]);
+        Map<String, dynamic> connectData = ({
+          'socketId': socketId,
+          'clientId': clientIdStr,
+        });
+        socket.emit('join', [connectData]);
       },
     );
   }
@@ -311,9 +294,9 @@ class ClientID_Text extends StatelessWidget {
   }
 }
 
-class RoomID_Text extends StatelessWidget {
+class SID_Text extends StatelessWidget {
   // used
-  const RoomID_Text({
+  const SID_Text({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -323,7 +306,7 @@ class RoomID_Text extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'Room ID: ' + socketId,
+      'SID: ' + socketId,
       textAlign: TextAlign.left,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
@@ -336,9 +319,9 @@ class RoomID_Text extends StatelessWidget {
   }
 }
 
-class RoomIDcopyToClipboard_Btn extends StatelessWidget {
+class SIDcopyToClipboard_Btn extends StatelessWidget {
   // used
-  const RoomIDcopyToClipboard_Btn({
+  const SIDcopyToClipboard_Btn({
     Key? key,
     required this.socketId,
   }) : super(key: key);
@@ -353,13 +336,12 @@ class RoomIDcopyToClipboard_Btn extends StatelessWidget {
         children: [
           ElevatedButton.icon(
             icon: const Icon(Icons.add_chart, size: 18),
-            label: Text('Copy Room ID to clip'),
+            label: Text('Copy SID to clip'),
             onPressed: () {
-              print('Room ID ' + socketId + ' copied to clipboard');
-              FlutterClipboard.copy(socketId).then((value) =>
-                  print('Room ID ' + socketId + ' copied to clipboard'));
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Room ID copied to clipboard'),
+              String _mess = 'SID ' + socketId + ' copied to clipboard';
+              FlutterClipboard.copy(socketId).then((value) => print(_mess));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(_mess),
               ));
             },
           ),
@@ -369,9 +351,9 @@ class RoomIDcopyToClipboard_Btn extends StatelessWidget {
   }
 }
 
-class RoomID_txtField extends StatelessWidget {
+class SID_txtField extends StatelessWidget {
   // used
-  const RoomID_txtField({
+  const SID_txtField({
     Key? key,
     required this.roomId,
   }) : super(key: key);
@@ -382,7 +364,7 @@ class RoomID_txtField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       decoration: const InputDecoration(
-        hintText: 'Room ID',
+        hintText: 'SID',
       ),
       controller: roomId,
     );
@@ -405,6 +387,27 @@ class Message_txtField extends StatelessWidget {
         hintText: 'Message',
       ),
       controller: messString,
+    );
+  }
+}
+
+class Disconnect_Btn extends StatelessWidget {
+  // used
+  const Disconnect_Btn({
+    Key? key,
+    required this.socket,
+  }) : super(key: key);
+
+  final Socket socket;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Disconnect'),
+      onPressed: () {
+        socket.emit('disconnect');
+      },
     );
   }
 }
