@@ -180,7 +180,7 @@ class _ChatFormState extends State<ChatForm> {
               Message_txtField(messString: messString_control),
               Divider(),
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Connect_Btn(
+                JoinRoom_Btn(
                     socket: socket,
                     socketId: socketId,
                     clientIdStr: clientIdStr),
@@ -261,34 +261,6 @@ class LeaveRoom_Btn extends StatelessWidget {
   }
 }
 
-class Connect_Btn extends StatelessWidget {
-  //used
-  const Connect_Btn({
-    Key? key,
-    required this.socket,
-    required this.socketId,
-    required this.clientIdStr,
-  }) : super(key: key);
-
-  final Socket socket;
-  final String socketId;
-  final String clientIdStr;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      icon: const Icon(Icons.add_chart, size: 18),
-      label: Text('Join room'),
-      onPressed: () {
-        if (socket.connected == false) {
-          socket.connect();
-        }
-        socket.emit('join', [socketId, clientIdStr]);
-      },
-    );
-  }
-}
-
 class JoinRoom_Btn extends StatelessWidget {
   //used
   const JoinRoom_Btn({
@@ -308,9 +280,6 @@ class JoinRoom_Btn extends StatelessWidget {
       icon: const Icon(Icons.add_chart, size: 18),
       label: Text('Join room'),
       onPressed: () {
-        if (socket.connected == false) {
-          socket.connect();
-        }
         socket.emit('join', [socketId, clientIdStr]);
       },
     );
@@ -400,6 +369,26 @@ class RoomIDcopyToClipboard_Btn extends StatelessWidget {
   }
 }
 
+class RoomID_txtField extends StatelessWidget {
+  // used
+  const RoomID_txtField({
+    Key? key,
+    required this.roomId,
+  }) : super(key: key);
+
+  final TextEditingController roomId;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'Room ID',
+      ),
+      controller: roomId,
+    );
+  }
+}
+
 class Message_txtField extends StatelessWidget {
   // used
   const Message_txtField({
@@ -420,22 +409,29 @@ class Message_txtField extends StatelessWidget {
   }
 }
 
-class RoomID_txtField extends StatelessWidget {
-  // used
-  const RoomID_txtField({
+/*class Connect_Btn extends StatelessWidget {
+  const Connect_Btn({
     Key? key,
-    required this.roomId,
+    required this.socket,
+    required this.socketId,
+    required this.clientIdStr,
   }) : super(key: key);
 
-  final TextEditingController roomId;
+  final Socket socket;
+  final String socketId;
+  final String clientIdStr;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      decoration: const InputDecoration(
-        hintText: 'Room ID',
-      ),
-      controller: roomId,
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.add_chart, size: 18),
+      label: Text('Join room'),
+      onPressed: () {
+        if (socket.connected == false) {
+          socket.connect();
+        }
+        socket.emit('join', [socketId, clientIdStr]);
+      },
     );
   }
-}
+}*/
