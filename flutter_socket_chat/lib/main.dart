@@ -32,7 +32,7 @@ class ChatForm extends StatefulWidget {
 }
 
 class _ChatFormState extends State<ChatForm> {
-  String socketId = '';
+  String SID = '';
   late Socket socket;
   late Future<String> clientId;
   String clientIdStr = '';
@@ -80,14 +80,14 @@ class _ChatFormState extends State<ChatForm> {
 
     socket.onConnect((_) {
       setState(() {
-        socketId = socket.id!;
+        SID = socket.id!;
       });
-      print('onConnect : socketId = ${socketId}');
+      print('onConnect : socketId = ${SID}');
     });
 
     socket.on("disconnect", (_) {
       setState(() {
-        socketId = '';
+        SID = '';
       });
       print('disconnected');
     });
@@ -150,14 +150,14 @@ class _ChatFormState extends State<ChatForm> {
               const SizedBox(height: 15),
               Row(
                 children: [
-                  Flexible(child: SID_Text(socketId: socketId)),
+                  Flexible(child: SID_Text(socketId: SID)),
                 ],
               ),
               const SizedBox(height: 15),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SIDcopyToClipboard_Btn(socketId: socketId),
+                  SIDcopyToClipboard_Btn(socketId: SID),
                   const SizedBox(width: 5),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.arrow_circle_down, size: 18),
@@ -166,7 +166,7 @@ class _ChatFormState extends State<ChatForm> {
                       FlutterClipboard.paste().then((value) {
                         setState(() {
                           roomId_control.text = value;
-                          socketId = value;
+                          SID = value;
                         });
                       });
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -181,14 +181,12 @@ class _ChatFormState extends State<ChatForm> {
               Divider(),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 JoinRoom_Btn(
-                    socket: socket,
-                    socketId: socketId,
-                    clientIdStr: clientIdStr),
+                    socket: socket, socketId: SID, clientIdStr: clientIdStr),
                 const SizedBox(width: 5),
                 Disconnect_Btn(socket: socket),
               ]),
               SendMessToRoom_Btn(
-                  socket: socket, socketId: socketId, clientIdStr: clientIdStr),
+                  socket: socket, socketId: SID, clientIdStr: clientIdStr),
               const Divider(
                 color: Colors.grey,
                 height: 20,
@@ -200,7 +198,7 @@ class _ChatFormState extends State<ChatForm> {
                 icon: const Icon(Icons.add_chart, size: 18),
                 label: Text('Send mess to room'),
                 onPressed: () {
-                  socket.emit('message', [socketId, clientIdStr]);
+                  socket.emit('message', [SID, clientIdStr]);
                 },
               ),
             ],
