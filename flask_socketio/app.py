@@ -37,7 +37,7 @@ def authenticate(auth):
 @socketio.on('connect')
 def on_connect():
     print('client connected')
-    emit('connected', {'data': 'connected'})
+    emit('connected', {'data': 'Server response on "connect": connected'})
 
 
 @socketio.on('connect_data')
