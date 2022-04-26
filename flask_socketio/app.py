@@ -42,8 +42,6 @@ def on_connect():
 
 @socketio.on('connect_data')
 def handle_connect_data(data):
-    #print(data['socketId'])
-    #print(data['clientId'])
     print(data['user'])
     print(data['token'])
     #if not authenticate(request.args):
@@ -52,7 +50,27 @@ def handle_connect_data(data):
 
 @socketio.on('disconnect')
 def on_disconnect():
-    print('client disconnected')    
+    print('client disconnected')
+
+
+@socketio.on('join')
+def on_join(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    send(username + ' has entered the room.', to=room)
+
+
+@socketio.on('leave')
+def on_leave(data):
+    username = data['username']
+    room = data['room']
+    leave_room(room)
+    send(username + ' has left the room.', to=room)
+
+
+def send_to_room(data, room):
+    socketio.emit('send_to_room', data, to=room)    
 
 
 @socketio.on('message')
@@ -98,6 +116,7 @@ def test_nmspc_event(json):
 def event4_handler(data):
     print('event4_handler received data: ' + str(data))
 
+
 socketio.on_event('event4', event4_handler, namespace='/test')
 
 
@@ -110,26 +129,6 @@ def handle_my_custom_event(json):
 # server-side emit, broadcast=True is assumed
 def some_function():
     socketio.emit('some event', {'data': 42})
-
-
-@socketio.on('join')
-def on_join(data):
-    username = data['username']
-    room = data['room']
-    join_room(room)
-    send(username + ' has entered the room.', to=room)
-
-
-@socketio.on('leave')
-def on_leave(data):
-    username = data['username']
-    room = data['room']
-    leave_room(room)
-    send(username + ' has left the room.', to=room)
-
-
-def send_to_room(data, room):
-    socketio.emit('send_to_room', data, to=room)
 
 
 @socketio.on_error_default  # handles all namespaces without an explicit error handler
