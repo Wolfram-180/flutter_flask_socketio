@@ -41,6 +41,7 @@ class _ChatFormState extends State<ChatForm> {
 
   final roomId_control = TextEditingController();
   final messString_control = TextEditingController();
+  final roomString_control = TextEditingController();
 
   bool joinedRoom = false;
 
@@ -128,6 +129,7 @@ class _ChatFormState extends State<ChatForm> {
     socket.dispose();
     roomId_control.dispose();
     messString_control.dispose();
+    roomString_control.dispose();
     super.dispose();
   }
 
@@ -178,6 +180,7 @@ class _ChatFormState extends State<ChatForm> {
               ),
               SID_txtField(roomId: roomId_control),
               Message_txtField(messString: messString_control),
+              Room_txtField(roomString: roomString_control),
               Divider(),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 JoinRoom_Btn(
@@ -385,6 +388,26 @@ class Message_txtField extends StatelessWidget {
         hintText: 'Message',
       ),
       controller: messString,
+    );
+  }
+}
+
+class Room_txtField extends StatelessWidget {
+  // used
+  const Room_txtField({
+    Key? key,
+    required this.roomString,
+  }) : super(key: key);
+
+  final TextEditingController roomString;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'Room',
+      ),
+      controller: roomString,
     );
   }
 }
