@@ -194,40 +194,24 @@ class _ChatFormState extends State<ChatForm> {
                   Flexible(child: SID_Text(socketId: SID)),
                 ],
               ),
-              const SizedBox(height: 15),
-/*              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SIDcopyToClipboard_Btn(socketId: SID),
-                  const SizedBox(width: 5),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.arrow_circle_down, size: 18),
-                    label: Text('Paste SID'),
-                    onPressed: () {
-                      FlutterClipboard.paste().then((value) {
-                        setState(() {
-                          SID_control.text = value;
-                          SID = value;
-                        });
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('SID pasted from clipboard'),
-                      ));
-                    },
-                  ),
-                ],
-              ),
-              SID_txtField(roomId: SID_control),
-              */
               Room_txtField(roomString: roomString_control),
               Nmspc_txtField(nmspcString: nmspcString_control),
               Usrnm_txtField(messString: usrnmString_control),
               Message_txtField(messString: messString_control),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 JoinRoom_Btn(
-                    socket: socket, socketId: SID, clientIdStr: clientIdStr),
+                    socket: socket,
+                    sid: SID,
+                    room: roomName,
+                    namespace: nameSpace,
+                    username: userName),
                 const SizedBox(width: 5),
-                Disconnect_Btn(socket: socket),
+                LeaveRoom_Btn(
+                    socket: socket,
+                    sid: SID,
+                    room: roomName,
+                    namespace: nameSpace,
+                    username: userName),
               ]),
               SendMessToRoom_Btn(
                   socket: socket, socketId: SID, clientIdStr: clientIdStr),
@@ -284,26 +268,32 @@ class SendMessToRoom_Btn extends StatelessWidget {
 
 class JoinRoom_Btn extends StatelessWidget {
   //used
-  const JoinRoom_Btn({
-    Key? key,
-    required this.socket,
-    required this.socketId,
-    required this.clientIdStr,
-  }) : super(key: key);
+  const JoinRoom_Btn(
+      {Key? key,
+      required this.socket,
+      required this.sid,
+      required this.room,
+      required this.namespace,
+      required this.username})
+      : super(key: key);
 
   final Socket socket;
-  final String socketId;
-  final String clientIdStr;
+  final String sid;
+  final String room;
+  final String namespace;
+  final String username;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      icon: const Icon(Icons.add_chart, size: 18),
+      icon: const Icon(Icons.person_add, size: 18),
       label: Text('Join room'),
       onPressed: () {
         Map<String, dynamic> connectData = ({
-          'socketId': socketId,
-          'clientId': clientIdStr,
+          'sid': sid,
+          'room': room,
+          'namespace': namespace,
+          'username': username,
         });
         socket.emit('join', [connectData]);
       },
@@ -493,22 +483,36 @@ class Nmspc_txtField extends StatelessWidget {
   }
 }
 
-class Disconnect_Btn extends StatelessWidget {
-  // used
-  const Disconnect_Btn({
-    Key? key,
-    required this.socket,
-  }) : super(key: key);
+class LeaveRoom_Btn extends StatelessWidget {
+  //used
+  const LeaveRoom_Btn(
+      {Key? key,
+      required this.socket,
+      required this.sid,
+      required this.room,
+      required this.namespace,
+      required this.username})
+      : super(key: key);
 
   final Socket socket;
+  final String sid;
+  final String room;
+  final String namespace;
+  final String username;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      icon: const Icon(Icons.add_chart, size: 18),
-      label: Text('Disconnect'),
+      icon: const Icon(Icons.person_remove, size: 18),
+      label: Text('Leave room'),
       onPressed: () {
-        socket.emit('disconnect');
+        Map<String, dynamic> leaveData = ({
+          'sid': sid,
+          'room': room,
+          'namespace': namespace,
+          'username': username,
+        });
+        socket.emit('leave', [leaveData]);
       },
     );
   }
