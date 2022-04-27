@@ -33,22 +33,33 @@ class ChatForm extends StatefulWidget {
 
 class _ChatFormState extends State<ChatForm> {
   String SID = '';
-  late Socket socket;
+  String nameSpace = 'default';
+
+  String userName = 'User';
+  String roomName = 'Room';
+
   late Future<String> clientId;
   String clientIdStr = '';
   var uuid = Uuid();
+
+  late Socket socket;
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  final roomId_control = TextEditingController();
-  final messString_control = TextEditingController();
+  //final SID_control = TextEditingController();
   final roomString_control = TextEditingController();
   final nmspcString_control = TextEditingController();
+  final usrnmString_control = TextEditingController();
+  final messString_control = TextEditingController();
 
   bool joinedRoom = false;
 
-  Future<String> SetClientId() async {
+  Future<String> SetClientData() async {
     final SharedPreferences prefs = await _prefs;
     final String _clientId = (prefs.getString('clientId') ?? uuid.v4());
+
+    nameSpace = (prefs.getString('nameSpace') ?? 'default');
+    userName = (prefs.getString('userName') ?? 'User');
+    roomName = (prefs.getString('roomName') ?? 'Room');
 
     setState(() {
       clientId = prefs.setString('clientId', _clientId).then((bool success) {
@@ -70,7 +81,8 @@ class _ChatFormState extends State<ChatForm> {
   void initState() {
     super.initState();
 
-    clientId = SetClientId().then((String clientId) => clientIdStr = clientId);
+    clientId =
+        SetClientData().then((String clientId) => clientIdStr = clientId);
 
     socket = io(
         'http://10.0.2.2:5000',
@@ -109,7 +121,7 @@ class _ChatFormState extends State<ChatForm> {
 
     socket.connect();
 
-    roomId_control.addListener(_printrcvrId);
+    //SID_control.addListener(_printrcvrId);
     messString_control.addListener(_printmessString);
   }
 
@@ -128,10 +140,11 @@ class _ChatFormState extends State<ChatForm> {
   @override
   void dispose() {
     socket.dispose();
-    roomId_control.dispose();
-    messString_control.dispose();
+    //SID_control.dispose();
     roomString_control.dispose();
     nmspcString_control.dispose();
+    usrnmString_control.dispose();
+    messString_control.dispose();
     super.dispose();
   }
 
@@ -158,7 +171,7 @@ class _ChatFormState extends State<ChatForm> {
                 ],
               ),
               const SizedBox(height: 15),
-              Row(
+/*              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SIDcopyToClipboard_Btn(socketId: SID),
@@ -169,7 +182,7 @@ class _ChatFormState extends State<ChatForm> {
                     onPressed: () {
                       FlutterClipboard.paste().then((value) {
                         setState(() {
-                          roomId_control.text = value;
+                          SID_control.text = value;
                           SID = value;
                         });
                       });
@@ -180,11 +193,12 @@ class _ChatFormState extends State<ChatForm> {
                   ),
                 ],
               ),
-              SID_txtField(roomId: roomId_control),
-              Message_txtField(messString: messString_control),
+              SID_txtField(roomId: SID_control),
+              */
               Room_txtField(roomString: roomString_control),
               Nmspc_txtField(nmspcString: nmspcString_control),
-              Divider(),
+              Usrnm_txtField(messString: usrnmString_control),
+              Message_txtField(messString: messString_control),
               Row(mainAxisSize: MainAxisSize.min, children: [
                 JoinRoom_Btn(
                     socket: socket, socketId: SID, clientIdStr: clientIdStr),
@@ -371,6 +385,26 @@ class SID_txtField extends StatelessWidget {
         hintText: 'SID',
       ),
       controller: roomId,
+    );
+  }
+}
+
+class Usrnm_txtField extends StatelessWidget {
+  // used
+  const Usrnm_txtField({
+    Key? key,
+    required this.messString,
+  }) : super(key: key);
+
+  final TextEditingController messString;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'User name',
+      ),
+      controller: messString,
     );
   }
 }
