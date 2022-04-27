@@ -38,6 +38,8 @@ class _ChatFormState extends State<ChatForm> {
   String userName = 'User';
   String roomName = 'Room';
 
+  String messageTxt = '';
+
   late Future<String> clientId;
   String clientIdStr = '';
   var uuid = Uuid();
@@ -51,18 +53,23 @@ class _ChatFormState extends State<ChatForm> {
   final usrnmString_control = TextEditingController();
   final messString_control = TextEditingController();
 
+  final String pref_clientId = 'clientId';
+  final String pref_roomName = 'roomName';
+  final String pref_nameSpace = 'nameSpace';
+  final String pref_userName = 'userName';
+
   bool joinedRoom = false;
 
   Future<String> SetClientData() async {
     final SharedPreferences prefs = await _prefs;
-    final String _clientId = (prefs.getString('clientId') ?? uuid.v4());
+    final String _clientId = (prefs.getString(pref_clientId) ?? uuid.v4());
 
-    nameSpace = (prefs.getString('nameSpace') ?? 'default');
-    userName = (prefs.getString('userName') ?? 'User');
-    roomName = (prefs.getString('roomName') ?? 'Room');
+    roomName = (prefs.getString(pref_roomName) ?? 'Room');
+    nameSpace = (prefs.getString(pref_nameSpace) ?? 'default');
+    userName = (prefs.getString(pref_userName) ?? 'User');
 
     setState(() {
-      clientId = prefs.setString('clientId', _clientId).then((bool success) {
+      clientId = prefs.setString(pref_clientId, _clientId).then((bool success) {
         return _clientId;
       });
     });
@@ -107,12 +114,9 @@ class _ChatFormState extends State<ChatForm> {
     });
 
     socket.on("connected", (data) {
-      //setState(() {});
       String _hash = hasher.textToMd5(temp_data.usr_password);
       print(data['data']);
       Map<String, dynamic> connectData = ({
-        //'socketId': socketId,
-        //'clientId': clientIdStr,
         'user': temp_data.usr_login,
         'token': _hash,
       });
@@ -121,16 +125,36 @@ class _ChatFormState extends State<ChatForm> {
 
     socket.connect();
 
-    //SID_control.addListener(_printrcvrId);
-    messString_control.addListener(_printmessString);
+    roomString_control.addListener(_lstnrRoomString);
+    nmspcString_control.addListener(_lstnrNmspcString);
+    usrnmString_control.addListener(_lstnrUsrnmString);
+    messString_control.addListener(_lstnrMessString);
+
+    roomString_control.text = roomName;
+    nmspcString_control.text = nameSpace;
+    usrnmString_control.text = userName;
   }
 
-  void _printrcvrId() {
-    //print('ID: ${rcvrId.text}');
+  void _lstnrRoomString() async {
+    roomName = roomString_control.text;
+    final SharedPreferences prefs = await _prefs;
+    prefs.setString(pref_roomName, roomName).then((bool success) {});
   }
 
-  void _printmessString() {
-    //print('Mess: ${messString.text}');
+  void _lstnrNmspcString() async {
+    nameSpace = nmspcString_control.text;
+    final SharedPreferences prefs = await _prefs;
+    prefs.setString(pref_nameSpace, nameSpace).then((bool success) {});
+  }
+
+  void _lstnrUsrnmString() async {
+    userName = usrnmString_control.text;
+    final SharedPreferences prefs = await _prefs;
+    prefs.setString(pref_userName, userName).then((bool success) {});
+  }
+
+  void _lstnrMessString() async {
+    messageTxt = messString_control.text;
   }
 
   void getEvent(data) {
