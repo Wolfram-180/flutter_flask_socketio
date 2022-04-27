@@ -55,17 +55,22 @@ def on_disconnect():
 
 @socketio.on('join')
 def on_join(data):
-    username = data['username']
+    sid = data['sid']
     room = data['room']
-    join_room(room)
-    send(username + ' has entered the room.', to=room)
+    namespace = data['namespace']
+    username = data['username']
+    join_room(room, sid=sid, namespace=namespace)
+    print(username + ' entered the room')
+    emit('entered_the_room', {'username':username}, room=room, namespace=namespace)
 
 
 @socketio.on('leave')
 def on_leave(data):
-    username = data['username']
+    sid = data['sid']
     room = data['room']
-    leave_room(room)
+    namespace = data['namespace']
+    username = data['username']   
+    leave_room(room, sid=sid, namespace=namespace)
     send(username + ' has left the room.', to=room)
 
 

@@ -7,7 +7,6 @@ import 'package:socket_io_client/socket_io_client.dart';
 import 'package:uuid/uuid.dart';
 
 import 'common/hasher.dart' as hasher;
-import 'ignore_data/temp_data.dart' as temp_data;
 
 void main() => runApp(const MyApp());
 
@@ -114,13 +113,17 @@ class _ChatFormState extends State<ChatForm> {
     });
 
     socket.on("connected", (data) {
-      String _hash = hasher.textToMd5(temp_data.usr_password);
+      String _hash = hasher.textToMd5(userName);
       print(data['data']);
       Map<String, dynamic> connectData = ({
-        'user': temp_data.usr_login,
+        'user': userName,
         'token': _hash,
       });
       socket.emit('connect_data', connectData);
+    });
+
+    socket.on('entered_the_room', (data) {
+      print('entered the room' + ' : ' + data['username']);
     });
 
     socket.connect();
