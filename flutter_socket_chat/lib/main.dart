@@ -122,8 +122,14 @@ class _ChatFormState extends State<ChatForm> {
       socket.emit('connect_data', connectData);
     });
 
-    socket.on('entered_the_room', (data) {
-      print('entered the room' + ' : ' + data['username']);
+    socket.on("enteredtheroom", (data) {
+      print(
+          '${data['username']} entered the room : ${data['room']} in namespace ${data['namespace']}');
+    });
+
+    socket.on("lefttheroom", (data) {
+      print(
+          '${data['username']} left the room : ${data['room']} in namespace ${data['namespace']}');
     });
 
     socket.connect();
