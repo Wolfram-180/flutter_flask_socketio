@@ -231,13 +231,6 @@ class _ChatFormState extends State<ChatForm> {
                 indent: 0,
                 endIndent: 0,
               ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add_chart, size: 18),
-                label: Text('Send mess to room'),
-                onPressed: () {
-                  socket.emit('message', [SID, clientIdStr]);
-                },
-              ),
             ],
           ),
         ),
@@ -269,7 +262,7 @@ class SendMessToRoom_Btn extends StatelessWidget {
       icon: const Icon(Icons.add_chart, size: 18),
       label: Text('Send mess to room'),
       onPressed: () {
-        socket.emit('message', [socketId, clientIdStr]);
+        socket.emit('messtoroom', [socketId, clientIdStr]);
       },
     );
   }

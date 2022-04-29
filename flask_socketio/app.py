@@ -2,6 +2,7 @@ from flask import Flask, render_template, session, copy_current_request_context,
 from flask_socketio import SocketIO, emit, send, join_room, leave_room, disconnect, ConnectionRefusedError
 from threading import Lock
 import logging
+import json
 
 import environment_params
 
@@ -61,7 +62,7 @@ def on_join(data):
     username = data['username']
     join_room(room, sid=sid, namespace=namespace)
     print(username + ' entered the room')
-    emit('entered_the_room', {'username':username}, room=room, namespace=namespace)
+    emit('enteredtheroom', {'username':username, 'room':room, 'namespace':namespace})
 
 
 @socketio.on('leave')
@@ -71,11 +72,12 @@ def on_leave(data):
     namespace = data['namespace']
     username = data['username']   
     leave_room(room, sid=sid, namespace=namespace)
-    send(username + ' has left the room.', to=room)
+    emit('lefttheroom', {'username':username, 'room':room, 'namespace':namespace})
 
 
-def send_to_room(data, room):
-    socketio.emit('send_to_room', data, to=room)    
+@socketio.on('messtoroom')
+def mess_to_room(mess, room):
+    socketio.emit('send_to_room', mess, to=room)    
 
 
 @socketio.on('message')
