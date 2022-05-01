@@ -132,6 +132,13 @@ class _ChatFormState extends State<ChatForm> {
           '${data['username']} left the room : ${data['room']} in namespace ${data['namespace']}');
     });
 
+    socket.on("send_to_room", (data) {
+      print(data['mess']);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(data['mess']),
+      ));
+    });
+
     socket.connect();
 
     roomString_control.addListener(_lstnrRoomString);
@@ -173,7 +180,6 @@ class _ChatFormState extends State<ChatForm> {
   @override
   void dispose() {
     socket.dispose();
-    //SID_control.dispose();
     roomString_control.dispose();
     nmspcString_control.dispose();
     usrnmString_control.dispose();
@@ -187,52 +193,58 @@ class _ChatFormState extends State<ChatForm> {
       appBar: AppBar(
         title: const Text(appName),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
-                ],
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Flexible(child: ClientID_Text(clientIdStr: clientIdStr)),
+              ],
+            ),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Flexible(child: SID_Text(socketId: SID)),
+              ],
+            ),
+            Room_txtField(roomString: roomString_control),
+            Nmspc_txtField(nmspcString: nmspcString_control),
+            Usrnm_txtField(messString: usrnmString_control),
+            Message_txtField(messString: messString_control),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              JoinRoom_Btn(
+                  socket: socket,
+                  sid: SID,
+                  room: roomString_control,
+                  namespace: nmspcString_control,
+                  username: usrnmString_control),
+              const SizedBox(width: 5),
+              LeaveRoom_Btn(
+                  socket: socket,
+                  sid: SID,
+                  room: roomString_control,
+                  namespace: nmspcString_control,
+                  username: usrnmString_control),
+            ]),
+            SendMessToRoom_Btn(
+                socket: socket,
+                mess: messString_control,
+                room: roomString_control),
+            const Divider(
+              color: Colors.grey,
+              height: 20,
+              thickness: 1,
+              indent: 0,
+              endIndent: 0,
+            ),
+            SingleChildScrollView(
+              // <-- wrap this around
+              child: Column(
+                children: <Widget>[],
               ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Flexible(child: SID_Text(socketId: SID)),
-                ],
-              ),
-              Room_txtField(roomString: roomString_control),
-              Nmspc_txtField(nmspcString: nmspcString_control),
-              Usrnm_txtField(messString: usrnmString_control),
-              Message_txtField(messString: messString_control),
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                JoinRoom_Btn(
-                    socket: socket,
-                    sid: SID,
-                    room: roomName,
-                    namespace: nameSpace,
-                    username: userName),
-                const SizedBox(width: 5),
-                LeaveRoom_Btn(
-                    socket: socket,
-                    sid: SID,
-                    room: roomName,
-                    namespace: nameSpace,
-                    username: userName),
-              ]),
-              SendMessToRoom_Btn(
-                  socket: socket, socketId: SID, clientIdStr: clientIdStr),
-              const Divider(
-                color: Colors.grey,
-                height: 20,
-                thickness: 1,
-                indent: 0,
-                endIndent: 0,
-              ),
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -248,13 +260,13 @@ class SendMessToRoom_Btn extends StatelessWidget {
   const SendMessToRoom_Btn({
     Key? key,
     required this.socket,
-    required this.socketId,
-    required this.clientIdStr,
+    required this.mess,
+    required this.room,
   }) : super(key: key);
 
   final Socket socket;
-  final String socketId;
-  final String clientIdStr;
+  final TextEditingController mess;
+  final TextEditingController room;
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +274,7 @@ class SendMessToRoom_Btn extends StatelessWidget {
       icon: const Icon(Icons.add_chart, size: 18),
       label: Text('Send mess to room'),
       onPressed: () {
-        socket.emit('messtoroom', [socketId, clientIdStr]);
+        socket.emit('messtoroom', [mess.text, room.text]);
       },
     );
   }
@@ -281,9 +293,9 @@ class JoinRoom_Btn extends StatelessWidget {
 
   final Socket socket;
   final String sid;
-  final String room;
-  final String namespace;
-  final String username;
+  final TextEditingController room;
+  final TextEditingController namespace;
+  final TextEditingController username;
 
   @override
   Widget build(BuildContext context) {
@@ -293,9 +305,9 @@ class JoinRoom_Btn extends StatelessWidget {
       onPressed: () {
         Map<String, dynamic> connectData = ({
           'sid': sid,
-          'room': room,
-          'namespace': namespace,
-          'username': username,
+          'room': room.text,
+          'namespace': namespace.text,
+          'username': username.text,
         });
         socket.emit('join', [connectData]);
       },
@@ -441,6 +453,9 @@ class Message_txtField extends StatelessWidget {
         hintText: 'Message',
       ),
       controller: messString,
+      onChanged: (text) {
+        //messString.text = text;
+      },
     );
   }
 }
@@ -498,9 +513,9 @@ class LeaveRoom_Btn extends StatelessWidget {
 
   final Socket socket;
   final String sid;
-  final String room;
-  final String namespace;
-  final String username;
+  final TextEditingController room;
+  final TextEditingController namespace;
+  final TextEditingController username;
 
   @override
   Widget build(BuildContext context) {
@@ -510,9 +525,9 @@ class LeaveRoom_Btn extends StatelessWidget {
       onPressed: () {
         Map<String, dynamic> leaveData = ({
           'sid': sid,
-          'room': room,
-          'namespace': namespace,
-          'username': username,
+          'room': room.text,
+          'namespace': namespace.text,
+          'username': username.text,
         });
         socket.emit('leave', [leaveData]);
       },

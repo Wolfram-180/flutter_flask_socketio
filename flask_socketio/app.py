@@ -61,7 +61,7 @@ def on_join(data):
     namespace = data['namespace']
     username = data['username']
     join_room(room, sid=sid, namespace=namespace)
-    print(username + ' entered the room')
+    print(username + ' entered the room ' + room)
     emit('enteredtheroom', {'username':username, 'room':room, 'namespace':namespace})
 
 
@@ -77,7 +77,9 @@ def on_leave(data):
 
 @socketio.on('messtoroom')
 def mess_to_room(mess, room):
-    socketio.emit('send_to_room', mess, to=room)    
+    socketio.emit('send_to_room', {'mess':mess}, to=room)
+    print('received message: ' + mess)
+    print('message sent to room : ' + room)
 
 
 @socketio.on('message')
